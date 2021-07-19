@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 const MainGrid = styled.main`
 	display: grid;
-	grid-gap: 10px;
+	grid-gap: 12px;
 	padding: 16px;
   width: 100%;
   margin-left: auto;

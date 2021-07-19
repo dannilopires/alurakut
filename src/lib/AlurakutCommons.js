@@ -229,6 +229,7 @@ AlurakutProfileSidebarMenuDefault.Wrapper = styled.div`
     font-size: 12px;
     color: #2E7BB4;
     margin-bottom: 16px;
+    margin-top: 16px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -277,7 +278,7 @@ export function OrkutNostalgicIconSet(props) {
             </span>
             <span className="OrkutNostalgicIconSet__iconComplex" className="OrkutNostalgicIconSet__number" style={{ gridArea: 'number' }}>
               {[0, 1, 2].map((_, index) => {
-                const isHeartActive = index <= (total - 1);
+                const isHeartActive = index <= (total-1);
                 return <img key={`orkut__icon_set__${slug}_img_${index}`} src={`https://alurakut.vercel.app/icons/${icon}.svg`} style={{ marginRight: '2px', opacity: isHeartActive ? 1 : '0.5' }} />
               })}
             </span>

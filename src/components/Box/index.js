@@ -5,6 +5,7 @@ const Box = styled.div`
 	border-radius: 8px;
 
 	padding: 16px;
+	margin-bottom: 10px;
 
 	.boxLink {
 		font-size: 14px;
@@ -60,9 +61,8 @@ const Box = styled.div`
 		padding: 8px 12px;
 		color: #FFFFFF;
 		border-radius: 10000px;
-		background-coclor: #6F928B;
+		background-color: #6F928B;
 	}
-		
 `;
 
 export default Box;
