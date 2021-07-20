@@ -7,7 +7,7 @@ import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations'
 
 function ProfileSidebar(propriedades) {
 	return (
-    <Box> 
+    <Box as="aside"> 
       <img src={`https://github.com/${propriedades.githubUser}.png`} style={{ borderRadius: '8px' }}></img>
       <hr />
 
@@ -23,15 +23,89 @@ function ProfileSidebar(propriedades) {
 	)
 }
 
+function ProfileRelationsBox(propriedades) {
+  return (
+    <ProfileRelationsBoxWrapper> 
+            <h2 className="smallTitle">
+              {propriedades.title}({propriedades.items.length})
+            </h2>
+
+            {/* <ul>
+              {seguidores.map((itemAtual) => {
+                return (
+                  <li key={itemAtual}>
+                    <a href={`/users/${itemAtual}`} >
+                      <img src={`https://github.com/${itemAtual}.png`} />
+                      <span>{itemAtual}</span>
+                    </a>
+                  </li>
+                  )
+              })}
+            </ul> */}
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
 export default function Home() {
-  const [comunidades, setComunidades] = React.useState(['Alurakut']); 
+  const [comunidades, setComunidades] = React.useState([]); 
 //const comunidades = comunidades[0];
 //const alteradorDeComunidades/setComunidades = comunidades[1];
-//React.use... ===> hooks 
+//React.useState... ===> hooks 
+//define duas constantes: comunidades (retorna o primeiro elemento do array - readOnly), setComunidades(o elemento a ser add)
 
   const githubUser = "dannilopires";
 
-  const pessoas = ["juunegreiros", "omariosouto", "peas", "badtuxx", "anuraghazra", "peixebabel"];
+  const pessoas = [
+    "juunegreiros", 
+    "omariosouto", 
+    "peas", 
+    "badtuxx", 
+    "anuraghazra", 
+    "peixebabel"
+  ];
+
+  const [seguidores, setSeguidores] = React.useState([]);
+
+ //0 - Pegar o array de dados do github
+  React.useEffect(function() {
+    fetch('https://api.github.com/users/dannilopires/followers')
+    .then(function(respostaDoServidor) {
+      return respostaDoServidor.json();
+    })
+    .then(function(respostaCompleta) {
+      setSeguidores(respostaCompleta);
+    })
+
+
+
+    //API GraphQL
+    fetch('https://graphql.datocms.com/', {
+      method: 'POST',
+      headers: {
+        'Authorization': '4dfc070989f86781b15991d9f85944',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }, 
+      body: JSON.stringify({ "query": `query {
+        allCommunities {
+          title
+          id
+          imageUrl
+          creatorSlug
+        }
+      }`}) 
+
+      })
+      .then((response) => response.json()) //Pega o retorno do response.json() e já retorna
+      .then((respostaCompleta) => {
+        const comunidadesVindasDoDato = respostaCompleta.data.allCommunities;
+        console.log(comunidadesVindasDoDato)
+        setComunidades(comunidadesVindasDoDato)
+      })
+
+  }, [])
+
+ //1 - Criar um box contendo um mapping dos itens do array do github
 
   return (
     <>
@@ -55,11 +129,32 @@ export default function Home() {
             </h2>
             <form onSubmit={function handleCriaComunidade(e){
 	              e.preventDefault();
-	              
-	
-                //comunidades.push('');
-                const comunidadesAtualizadas = [...comunidades, 'Alura Stars'];
-                setComunidades(comunidadesAtualizadas);
+
+                const dadosDoForm = new FormData(e.target); 
+                //console.log("Campo: ", dadosDoForm.get('title'));
+                //console.log("Campo: ", dadosDoForm.get('image'));
+
+                const comunidade ={ 
+                  title: dadosDoForm.get('title'),
+                  imageUrl: dadosDoForm.get('image'),
+                  creatorSlug: githubUser,
+                }
+
+                fetch('/api/comunidades', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(comunidade)
+                })
+                .then(async (response) => {
+                  const dados = await response.json();
+                  console.log(dados.registroCriado);
+                  const comunidade = dados.registroCriado;
+                  const comunidadesAtualizadas = [...comunidades, comunidade];
+                  setComunidades(comunidadesAtualizadas);
+                })
+	            
               }}>
               <div>
                 <input 
@@ -82,16 +177,20 @@ export default function Home() {
         </div>
       
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+
+          <ProfileRelationsBox title="Seguidores" items={seguidores}/>
+
+
           <ProfileRelationsBoxWrapper> 
             <h2 className="smallTitle">
-              Pessoas({pessoas.length})
+              Pessoas da comunidade({pessoas.length})
             </h2>
 
             <ul>
               {pessoas.map((itemAtual) => {
                 return (
-                  <li>
-                    <a href={`/users/${itemAtual}`} key={itemAtual}>
+                  <li key={itemAtual}>
+                    <a href={`/users/${itemAtual}`} >
                       <img src={`https://github.com/${itemAtual}.png`} />
                       <span>{itemAtual}</span>
                     </a>
@@ -103,16 +202,16 @@ export default function Home() {
 
           <ProfileRelationsBoxWrapper> 
             <h2 className="smallTitle">
-              Comunidades
+              Comunidades({comunidades.length})
             </h2>
 
             <ul>
               {comunidades.map((itemAtual) => {
                 return (
-                  <li>
-                    <a href={`/users/${itemAtual}`} key={itemAtual}>
-                      <img src={`http://placehold.it/300x300`} />
-                      <span>{itemAtual}</span>
+                  <li key={itemAtual.id}>
+                    <a href={`/communities/${itemAtual.id}`}>
+                      <img src={itemAtual.imageUrl} />
+                      <span>{itemAtual.title}</span>
                     </a>
                   </li>
                   )
