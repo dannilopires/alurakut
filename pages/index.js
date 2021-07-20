@@ -1,4 +1,6 @@
 import styled from 'styled-components'
+import nookies from 'nookies'
+import jwt from 'jsonwebtoken'
 import React from 'react'
 import MainGrid from '../src/components/MainGrid'
 import Box from '../src/components/Box'
@@ -46,14 +48,14 @@ function ProfileRelationsBox(propriedades) {
   )
 }
 
-export default function Home() {
+export default function Home(props) {
   const [comunidades, setComunidades] = React.useState([]); 
 //const comunidades = comunidades[0];
 //const alteradorDeComunidades/setComunidades = comunidades[1];
 //React.useState... ===> hooks 
 //define duas constantes: comunidades (retorna o primeiro elemento do array - readOnly), setComunidades(o elemento a ser add)
 
-  const githubUser = "dannilopires";
+  const githubUser = props.githubUser;
 
   const pessoas = [
     "juunegreiros", 
@@ -104,8 +106,6 @@ export default function Home() {
       })
 
   }, [])
-
- //1 - Criar um box contendo um mapping dos itens do array do github
 
   return (
     <>
@@ -222,4 +222,26 @@ export default function Home() {
       </MainGrid>
     </>
   )
+}
+
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context);
+  const token = cookies.USER_TOKEN;
+  const decodedToken = jwt.decode(token);
+  const githubUser = decodedToken?.githubUser;
+
+  if (!githubUser) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+  
+    return {
+      props: {
+        githubUser,
+      },
+    }
 }
