@@ -32,18 +32,18 @@ function ProfileRelationsBox(propriedades) {
               {propriedades.title}({propriedades.items.length})
             </h2>
 
-            {/* <ul>
-              {seguidores.map((itemAtual) => {
+            {<ul>
+              {propriedades.items.slice(0,6).map((itemAtual) => {
                 return (
-                  <li key={itemAtual}>
-                    <a href={`/users/${itemAtual}`} >
-                      <img src={`https://github.com/${itemAtual}.png`} />
-                      <span>{itemAtual}</span>
+                  <li key={itemAtual.id}>
+                    <a href={`/users/${itemAtual.login}`} >
+                      <img src={itemAtual.avatar_url}/>
+                      <span>{itemAtual.login}</span>
                     </a>
                   </li>
                   )
               })}
-            </ul> */}
+            </ul>}
     </ProfileRelationsBoxWrapper>
   )
 }
@@ -227,21 +227,40 @@ export default function Home(props) {
 export async function getServerSideProps(context) {
   const cookies = nookies.get(context);
   const token = cookies.USER_TOKEN;
-  const decodedToken = jwt.decode(token);
-  const githubUser = decodedToken?.githubUser;
+ // const decodedToken = jwt.decode(token);
+ // const githubUser = decodedToken?.githubUser;
 
-  if (!githubUser) {
+  if (token === undefined) {
+    return {
+      redirect: {
+        destination: 'login',
+        permanent: false,
+      }
+    }
+  }
+  
+  const { isAuthenticated } = await fetch("https://alurakut.vercel.app/api/auth", {
+    headers: {
+      Authorization: token
+    }
+  })
+  .then((resposta) => resposta.json())
+  
+  if(!isAuthenticated) {
     return {
       redirect: {
         destination: '/login',
         permanent: false,
-      },
+      }
     }
   }
   
-    return {
-      props: {
-        githubUser,
-      },
-    }
+  const { githubUser } = jwt.decode(token);
+  return {
+    props: {
+      githubUser
+    },
+  }
+  
+    
 }
